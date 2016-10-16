@@ -1,0 +1,77 @@
+\documentclass[notitlepage]{article}
+\usepackage{listings}
+\usepackage{numprint}
+
+\lstloadlanguages{R}
+
+\lstset{basicstyle=\ttfamily, numbers=none, literate={~} {$\sim$}{2}}
+
+\begin{document}
+\title
+\author
+\maketitle
+
+
+%<<setup, echo=FALSE>>=
+%library(knitr)
+%knit_hooks$set(source = function(x, options) {
+%    paste("\\begin{lstlisting}[numbers=left, firstnumber=last]\n", x, 
+%        "\\end{lstlisting}\n", sep = "")
+%})
+%@
+
+
+g)Computing the ROC curve
+<<m12.g.roc,comment='+'>>=
+roc.curve <- function(y,pred){
+	p <- seq(from=0,to=1,by=0.01)
+	out <- matrix(ncol=2,nrow=length(p))
+	for(i in 1:length(p)){
+	y.hat <- as.numeric(pred>p[i])
+	tmp <- cbind(y,y.hat)
+	I1 <- as.numeric(y==1)
+	I2 <- as.numeric(y.hat==1)
+	a <- sum(I1*I2)
+	b <- sum(I1*(1-I2))
+	c <- sum((1-I1)*I2)
+	d <- sum((1-I1)*(1-I2))
+	sens <- a/(a+b)
+	spec <- d/(c+d)
+	out[i,1] <- 1-spec
+	out[i,2] <- sens
+	}
+	out  
+}
+
+pred1 <- predict(fit2,type="response")
+pred2 <- predict(fit2.l,type="response")
+Y.ratio<-esoph$ncases/(esoph$ncases+esoph$ncontrols)
+roc.m1 <- roc.curve(esoph$ncases,pred1)
+roc.m2 <- roc.curve(esoph$ncases,pred2)
+plot(roc.m1,type="l",xlab="x",ylab="y",main="ROC curves",col="green")
+lines(roc.m2,col="blue")
+legend(0,1,c("level predictor","continuous predictor"),c("green","blue"),lty = c(2,1))
+@
+The blue curve fits better according to the ROC curve. It represents the predictors that has a continuous effect on the model.
+
+<<m12.g,comment='+'>>=
+fit2$aic #category
+fit2.l$aic #continuous
+@
+Based on the aic, the model with the predictors of categorical levels yields a lower aic $225.454$, and thus is a better model.
+
+<<m12.compare,comment='+'>>=
+summary(fit2)
+summary(fit2.l)
+@
+I would choose the model with the categorical predictors. There are two main reasons. First of all, both models yields significance for age, alcohol and tobacco. Second of all, the categorical model reveal more information than the continuous model.\\
+
+Based on the two models, we see that both models indicate that age, alcohol consumption and tobacco consumption have significant effects on the probability of getting cancer. Both model indicates similar direction of the effects, where older age predicts higher probability of getting cancer, higher alcohol consumption indicates higher risk of getting cancer, and higher tobacco consumption indicates higher probability of getting cancer. The model with categorical predictors yields lower aic. Both models yields deviance close to each other. \\
+
+Yet from the model with the categorical predictors, we not only see that an overall effect of age, alcohol and tobacco, but also we can see the behaviour of the each level of the category. For example, age35-44 category itself yield no significance in the model and this indicates that at age 35-44, the effect of age on the probability of getting cancer is not significant. Similarly for the tobacco 20-29 group, which is not significant either in the model. Thus with the model of categorical predictors, we are getting more information about the effect of each predictor on the probability of getting cancer.\\
+
+
+
+
+
+\end{document}

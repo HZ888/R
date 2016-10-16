@@ -1,0 +1,87 @@
+\documentclass[notitlepage]{article}
+\usepackage{listings}
+\usepackage{numprint}
+
+\lstloadlanguages{R}
+
+\lstset{basicstyle=\ttfamily, numbers=none, literate={~} {$\sim$}{2}}
+
+\begin{document}
+\title
+\author
+\maketitle
+
+
+%<<setup, echo=FALSE>>=
+%library(knitr)
+%knit_hooks$set(source = function(x, options) {
+%    paste("\\begin{lstlisting}[numbers=left, firstnumber=last]\n", x, 
+%        "\\end{lstlisting}\n", sep = "")
+%})
+%@
+
+
+e) Notice all models are ordered. To construct a simplier model, we treat each factor as a linear predictor.\\
+<<m12.e,comment='+'>>=
+age.l<-as.numeric(age)
+alc.l<-as.numeric(alc)
+tob.l<-as.numeric(tob)
+Y<-cbind(esoph$ncases,esoph$ncontrols)
+fit1.l<-glm(Y~1,family = binomial)
+fit2.l<-glm(Y~1+age.l+alc.l+tob.l,family = binomial)
+fit3.l<-glm(cbind(ncases,ncontrols)~1+age.l+alc.l+tob.l+age.l:alc.l,family = binomial,esoph)
+fit4.l<-glm(cbind(ncases,ncontrols)~1+age.l+alc.l+tob.l+age.l:tob.l,family = binomial,esoph)
+fit5.l<-glm(cbind(ncases,ncontrols)~1+age.l+alc.l+tob.l+alc.l:tob.l,family = binomial,esoph)
+fit6.l<-glm(cbind(ncases,ncontrols)~1+age.l+alc.l+tob.l+age.l:alc.l+age.l:tob.l,family = binomial,esoph)
+fit7.l<-glm(cbind(ncases,ncontrols)~1+age.l+alc.l+tob.l+age.l:alc.l+alc.l:tob.l,family = binomial,esoph)
+fit8.l<-glm(cbind(ncases,ncontrols)~1+age.l+alc.l+tob.l+alc.l:tob.l+age.l:tob.l,family = binomial,esoph)
+fit9.l<-glm(cbind(ncases,ncontrols)~1+age.l+alc.l+tob.l+alc.l:tob.l+age.l:tob.l+alc.l:age.l,family = binomial,esoph)
+fit10.l<-glm(cbind(ncases,ncontrols)~1+age.l*alc.l*tob.l,family = binomial,esoph)
+#Backward selection
+drop1(fit10.l,test = "Chi")
+anova(fit9.l,fit10.l,test="Chi")
+@
+With drop1 function, we see that the saturated model can be simplified as the fit9.1 model. The three-way interaction term can be dropped. To confirm, we compare two models with the chi-square test and see that fit9.l and fit10.l are not significantly different.
+
+<<m12.e.fit9,comment='+'>>=
+drop1(fit9.l,test = "Chi")
+anova(fit9.l,fit7.l,test="Chi")
+@
+By using the backward model selection method, we see that the interaction term age:tob is not significant. The term can be dropped in the model. This is further confirmed by the anova chi-square test where the two models are not significantly different. We thus dropped the two-way interaction term age:tob.
+
+<<m12.e.fit7,comment='+'>>=
+drop1(fit7.l,test = "Chi")
+anova(fit5.l,fit7.l,test="Chi")
+@
+drop1 function show that the interaction term age:alc is not a significant predictor. This term can be dropped in the final model. We further confirmed this finding by anova chi-square test and showed that the model with two interaction term can be simplified into the model with only one interaction term alc:tob.
+
+<<m12.e.fit3,comment='+'>>=
+drop1(fit5.l,test = "Chi")
+anova(fit2.l,fit5.l,test = "Chi")
+@
+The interaction term alc:tob is not signifiant and can be dropped. ANOVA chi-square test also showed that the model with the two-way interaction and the model without interaction term are not significantly different from each other. Thus we may drop the interaction alc:tob. We are left with a model with only the main effect. 
+
+<<m12.e.fit2,comment='+'>>=
+drop1(fit2.l,test = "Chi")
+@
+We see that all the variables in the model are significant. Thus model cannot be simplified further. Thus we arrive at the model with only main effects as the best fitted model.\\
+
+
+f) Interpret the model 
+<<m12.f,comment='+'>>=
+summary(fit2.l)
+@
+The model is a logistic regression model with three linear predictors. In the fitted regression, there are three main effects. The model can be written as: $$\log\frac{\pi}{1-\pi}=\alpha+\beta_1+\beta_2+\beta_3$$, where $\beta_1$ is the parameter for age, $\beta_2$ represents alcohol consumption and $\beta_3$ indicates tobacco. \\
+
+<<m12.f.exp,comment='+'>>=
+fit2.l$coefficients
+exp(fit2.l$coefficients)
+@
+We can see that the effect of age on cancer is positive. One increase on age predicts 1.7 increase on getting cancer. The effect of alcohol consumption on cancer is positive. One increase on alcohol consumption predicts 2 increase on getting cancer. The effect of tobacco consumption on cancer is positive. One increase on tobacoo consumption predicts 1.3 increase on getting cancer.\\
+ 
+The difference between this model and model in a) includes the followings: This model have the predictors as linear predictors, the effects are linear. The model in a) have predictors as factor, which are categorical variables with different levels. For the linear model, there is one overall estimate for each one variable on the response, the probability of getting cancer. However, for the model with categorical variables, each level of an variable yields its own parameter estimate. We have different parameter estimates for different levels within each variable. By comparing the estimates within each variable, we can see the rate of change of getting cancer for different levels within age, tobacco consumption and alcohol consumption.\\
+
+
+
+
+\end{document}

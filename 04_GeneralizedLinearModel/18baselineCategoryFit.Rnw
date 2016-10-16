@@ -1,0 +1,40 @@
+\documentclass[notitlepage]{article}
+\usepackage{listings}
+\usepackage{numprint}
+
+\lstloadlanguages{R}
+
+\lstset{basicstyle=\ttfamily, numbers=none, literate={~} {$\sim$}{2}}
+
+\begin{document}
+\title
+\author
+\maketitle
+
+
+%<<setup, echo=FALSE>>=
+%library(knitr)
+%knit_hooks$set(source = function(x, options) {
+%    paste("\\begin{lstlisting}[numbers=left, firstnumber=last]\n", x, 
+%        "\\end{lstlisting}\n", sep = "")
+%})
+%@
+
+Plot $\hat\pi_D$, $\hat\pi_I$ and $\hat\pi_R$ for $x\in(0,10)$
+<<m13.c,comment='+'>>=
+x<-seq(0,10,.5)
+pi_I<-1/(1+exp(3.3-0.2*x)+exp(1+0.3*x))
+pi_D<-exp(3.3-0.2*x)/(1+exp(3.3-0.2*x)+exp(1+0.3*x))
+pi_R<-exp(1+0.3*x)/(1+exp(3.3-0.2*x)+exp(1+0.3*x))
+plot(x,pi_D,type="l",col="red",main="Baseline category fit")
+lines(pi_I,col="green")
+lines(pi_R,col="blue")
+legend(0,0.5,c("pi_D","pi_I","pi_R"),col=c("red", "green", "blue"),lty = c(2,1,1))
+@
+
+Interpretation: the rates of preference is the lowest for the Independent for voters with an annual income ranges from $0$ to $\$100,000$. The preference for the Independent is the baseline level. For the voters with an annual income ranges from $0$ to about $\$60,000$, where the intersection of the preference for the Democrates and Republican is, the preference for Democrates is higher than for the Republican. Within the income ranges above around $\$60,000$ to $\$100,000$, the voters prefer the Republican is than the Democrates. The preference for the Democrates in decreasing continuously among the voters as their annual income increases from $0$ to$\$100,000$. Meanwhile, the preference for the Republican is increasing continuously among the voters as their annual income increase from $0$ to $\$100,000$. The preference for the Independent does not varies much as with the change of annual income for votes with an income within $0$ to$\$100,000$\\ 
+
+
+
+
+\end{document}

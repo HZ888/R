@@ -1,0 +1,164 @@
+\documentclass[notitlepage]{article}
+\usepackage{listings}
+\usepackage{numprint}
+
+\lstloadlanguages{R}
+
+\lstset{basicstyle=\ttfamily, numbers=none, literate={~} {$\sim$}{2}}
+
+\begin{document}
+\title
+\author
+\maketitle
+
+
+%<<setup, echo=FALSE>>=
+%library(knitr)
+%knit_hooks$set(source = function(x, options) {
+%    paste("\\begin{lstlisting}[numbers=left, firstnumber=last]\n", x, 
+%        "\\end{lstlisting}\n", sep = "")
+%})
+%@
+
+Fit a logistic regression model to the data.
+<<m12e,comment='+'>>=
+data(esoph)
+age<-factor(esoph$agegp,ordered=F)
+alc<-factor(esoph$alcgp,ordered = F)
+tob<-factor(esoph$tobgp,ordered = F)
+fit1<-glm(cbind(ncases,ncontrols)~1,family = binomial,esoph)
+fit2<-glm(cbind(ncases,ncontrols)~1+age+alc+tob,family = binomial,esoph)
+fit3<-glm(cbind(ncases,ncontrols)~1+age+alc+tob+age:alc,family = binomial,esoph)
+fit4<-glm(cbind(ncases,ncontrols)~1+age+alc+tob+age:tob,family = binomial,esoph)
+fit5<-glm(cbind(ncases,ncontrols)~1+age+alc+tob+alc:tob,family = binomial,esoph)
+fit6<-glm(cbind(ncases,ncontrols)~1+age+alc+tob+age:alc+age:tob,family = binomial,esoph)
+fit7<-glm(cbind(ncases,ncontrols)~1+age+alc+tob+age:alc+alc:tob,family = binomial,esoph)
+fit8<-glm(cbind(ncases,ncontrols)~1+age+alc+tob+alc:tob+age:tob,family = binomial,esoph)
+fit9<-glm(cbind(ncases,ncontrols)~1+age+alc+tob+alc:tob+age:tob+alc:age,family = binomial,esoph)
+fit10<-glm(cbind(ncases,ncontrols)~1+age*alc*tob,family = binomial,esoph)
+@
+
+Deviance based model selection is obtained by penalizing the difference between the deviance of the fitted model and the full model. Backward elimination:
+<<m12.2.deviance,comment='+'>>=
+anova(fit10,fit9,test = "Chi")
+anova(fit9,fit8,test = "Chi")
+@
+Both test are not significant, thus model can be further simplified.\\
+
+Since anova chi square comparison can only be used in nested model, now we are comparing fit9, which contains all the two-way interactions, with other models with two-way interactions.
+<<m12.2.anova,comment='+'>>=
+anova(fit9,fit7,test = "Chi")
+anova(fit9,fit6,test = "Chi")
+anova(fit9,fit5,test = "Chi")
+anova(fit9,fit4,test = "Chi")
+anova(fit9,fit3,test = "Chi")
+anova(fit9,fit2,test = "Chi")
+@
+The model with two-way interactions are not significantly different from the model with no interaction. Thus we now arrive at fit2, which contains only the main effects.
+
+<<m12.2.anova2,comment='+'>>=
+anova(fit2,fit8,test = "Chi")
+anova(fit2,fit7,test = "Chi")
+anova(fit2,fit6,test = "Chi")
+anova(fit2,fit5,test = "Chi")
+anova(fit2,fit4,test = "Chi")
+anova(fit2,fit3,test = "Chi")
+@
+Compare the two-way interaction model with the model without interaction. Chi-square test indicates that they are all not significant. Thus the model can be simplified. And we arrive at a model without any interaction term.
+
+<<m12.2.anova3,comment='+'>>=
+anova(fit2,fit1,test = "Chi")
+@
+Comparing fit2 and fit1, we see that fit2 is significantly different from fit1, thus cannot be further simplified. We therefore have fit2 as our best fitted model.  \\
+
+b)
+<<m12.2,comment='+'>>=
+summary(esoph)
+@
+
+The best fitted model contains main effects. In this logistic model, we have no interaction. For main effects, we have 11 parameters in total. This is calculated by the following. From the summary table of the dataset, we see that there are 6 levels of age groups, 4 levels of alcohol consumption, and 4 levels of tobacco. Thus in our best fitted model, we have age 25-34 as the baseline level, and 5 main effects in the fitted regression analysis. We have alcohol consumption 0-39g/day as the baseline level and 3 main effects in the fitted regression. For tobacco, we have the 0-9g/day as the baseline level and 3 main effects in the regression. $5+3+3=11$\\
+
+<<m12.b.sum,comment='+'>>=
+length(fit2$coefficients)
+@
+
+Together with one intercept term, we should have $1+11=12$ parameters in the main effects fitted logistic regression model. \\
+
+For fit2, with the main effects model, we have:\\
+$$\log\frac{\pi}{1-\pi}=\alpha+\beta_i^A+\beta_j^L+\beta_k^T,$$
+where ${i=2,3,4,5,6; j=2,3,4; k=2,3,4}$ and A is for Age, T is for Tobacco and L is for Alcohol.\\
+
+<<m12.b.sumfit2,comment='+'>>=
+summary(fit2)
+co<-fit2$coefficients
+c(co[6],co[5],co[4],co[3],co[2])
+exp(c(co[6],co[5],co[4],co[3],co[2]))
+c(co[6]-co[5],co[5]-co[4],co[4]-co[3],co[3]-co[2],co[2])
+@
+For age groups, the estimates are greater than 1, thus we have that $\exp(\beta)>1$. Thus age has a positive effect on cancer. The older the age group, the bigger the $\beta$ parameters are and the more likely that the patients are getting cancer. For example, for age group35-44, one increase on age yields 5 increase in getting cancer. Furthermore, from the differences of the estimates. We can see that the probability of getting cancer is increasing at a slower rate for the older age group than compared to the relative younger age groups. \\
+
+<<m12.b.alc,comment='+'>>=
+c(co[9],co[8],co[7])
+exp(c(co[9],co[8],co[7]))
+c(co[9]-co[8],co[8]-co[7],co[7])
+@
+For the effect of alcohol, the estimates are larger than 1. Thus similarly, with the increase of alcohol level, the more likely for the participants to have cancer. For example, for alc40-79 group, one increase in alcohol consumption yields a 3 increase in getting cancer. The rates of increase in getting cancer from the baseline group to the alc40-79 group is higher than the rates of increase in getting cancer from the alc40-79 group to the alc80-119 group. And the rates of increase in getting cancer from the alc40-79 group to the alc80-119 group is higher than both the rates of increase in the lower alcohol consumption group and in the higher alcohol consumption group.  \\
+
+<<m12.b.tob,comment='+'>>=
+c(co[12],co[11],co[10])
+exp(c(co[12],co[11],co[10]))
+c(co[12]-co[11],co[11]-co[10],co[10])
+@
+
+For the effect of tobacco, the estiamtes are bigger than 0, Thus, $\exp(\beta)>1$. Therefore, the tobacco has a positive influence on getting cancer. The more tobacco one consumes, the  more likely to get cancer as the $\beta$ parameters increases with the tabacco consumption increases. For example, one increase in the tobacco consumption predicts a 1.4 increase in getting cancer. From the change of the estimates, we see that the rate of increase of getting cancer rate is relatively higher from the baseline level to the tob10-19. It slower down from tob 10-19 to tob20-29 and then increase again from tob 20-29 to tob30+.\\
+
+c) Using the model selected in part a), compute the predicted effect of moving one category higher in alcohol consumption. Provide $95\%$ CI
+<<m12.c,comment='+'>>=
+#The effect of moving from 40-79 category to the baseline category. OR and 95% CI.
+coef.esoph<-summary(fit2)$coefficients
+exp(coef.esoph[7,1])
+c(exp(coef.esoph[7,1]-1.96*coef.esoph[7,2]),exp(coef.esoph[7,1]+1.96*coef.esoph[7,2]))
+
+#Fisher Information
+fit2<-glm(cbind(ncases,ncontrols)~1+age+alc+tob,family = binomial,esoph,x=T)
+X.fit2<-fit2$x
+W.fit2<-diag(fitted(fit2))
+var.cov.fit2<-solve(t(X.fit2)%*%W.fit2%*%X.fit2)
+
+#The effect of moving from 80-119 category to 40-79 category. OR and 95% CI.
+exp(coef.esoph[8,1]-coef.esoph[7,1])
+sd.e.al3.2<-sqrt(var.cov.fit2[8,8]+var.cov.fit2[7,7]-var.cov.fit2[8,7]-var.cov.fit2[7,8])
+c(exp(coef.esoph[8,1]-coef.esoph[7,1]-1.96*sd.e.al3.2),exp(coef.esoph[8,1]-coef.esoph[7,1]+1.96*sd.e.al3.2))
+
+#The effect of moving from 120+category to the 80-119 category. OR and 95% CI.
+exp(coef.esoph[9,1]-coef.esoph[8,1])
+sd.e4.3<-sqrt(var.cov.fit2[8,8]+var.cov.fit2[9,9]-var.cov.fit2[8,9]-var.cov.fit2[9,8])
+c(exp(coef.esoph[9,1]-coef.esoph[8,1]-1.96*sd.e4.3),exp(coef.esoph[9,1]-coef.esoph[8,1]+1.96*sd.e4.3))
+@
+
+
+d)Inspect the fit of the model selected in part a) using residuals.
+<<m12.d,comment='+'>>=
+plot(fitted(fit2),residuals(fit2))
+@
+Fit is good. The residuals all line around 0 and distributed randomly without any pattern.\\
+
+<<m12.dchi,comment='+'>>=
+X.2 <- sum(residuals(fit2,type="pearson")^2)
+pchisq(X.2,df=df.residual(fit2),lower.tail=FALSE)
+df.residual(fit2)
+@
+
+
+Calculated the expected counts and compare them to the observed counts using a Chi-square test.
+<<m12.c.expand,comment='+'>>=
+length(fit2$coefficients)
+expected<-fitted(fit2)*(esoph$ncases+esoph$ncontrols)
+observed<-esoph$ncases
+chi<-sum( (observed-expected)^2/expected ) #df=n-p=88-12=76
+qchisq(.975,df=76,lower.tail = F)
+@
+The chi-square test is significant. The test is not reliable since there are many 0 counts for the cases. Thus we cannot trust the model fit. 
+
+
+\end{document}
