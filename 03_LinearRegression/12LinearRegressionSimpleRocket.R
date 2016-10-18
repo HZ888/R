@@ -12,7 +12,10 @@ plot(x,y,pch=19,xlab='Age',ylab='Shear Strength')
 
 (xmean<-mean(x))
 (ymean<-mean(y))
+
 abline(v=xmean,h=ymean,lty=2)
+dev.copy2pdf(file='RocketPropPlot.pdf',paper='USr',width=11,height=9)
+
 
 ########statistics
 fit.rp<-lm(y~x)
@@ -33,27 +36,6 @@ t(x) %*% x
 lm(y~I(x-mean(x)))
 ##################################
 
-data.source<-"http://www.math.mcgill.ca/dstephens/Regression/Data/2-1-RocketProp.csv"
-
-RocketProp<-read.csv(file=data.source)
-
-names(RocketProp)<-c('i','Strength','Age')
-
-x<-RocketProp$Age
-y<-RocketProp$Strength
-plot(x,y)
-
-plot(x,y,pch=19)
-
-plot(x,y,pch=19,xlab='Age',ylab='Shear Strength')
-
-(xmean<-mean(x))
-(ymean<-mean(y))
-
-abline(v=xmean,h=ymean,lty=2)
-dev.copy2pdf(file='RocketPropPlot.pdf',paper='USr',width=11,height=9)
-
-############################################
 #Fit the simple linear regression using lm
 
 fit.RP<-lm(y~x)
