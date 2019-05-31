@@ -1,0 +1,53 @@
+# ggplot2 examples
+library(ggplot2) 
+
+mtcars$gear <- factor(mtcars$gear,levels=c(3,4,5),
+                      labels=c("3gears","4gears","5gears")) 
+mtcars$am <- factor(mtcars$am,levels=c(0,1),
+                    labels=c("Automatic","Manual")) 
+mtcars$cyl <- factor(mtcars$cyl,levels=c(4,6,8),
+                     labels=c("4cyl","6cyl","8cyl")) 
+# Kernel density plots for mpg
+# grouped by number of gears (indicated by color)
+qplot(mpg, data=mtcars, geom="density", fill=gear, alpha=I(.5), 
+      main="Distribution of Gas Milage", xlab="Miles Per Gallon", 
+      ylab="Density")
+
+# Scatterplot of mpg vs. hp for each combination of gears and cylinders
+# in each facet, transmittion type is represented by shape and color
+qplot(hp, mpg, data=mtcars, shape=am, color=am, 
+      facets=gear~cyl, size=I(3),
+      xlab="Horsepower", ylab="Miles per Gallon") 
+
+library(tidyverse)
+housing <- read.csv("C:/Users/Stats/Dropbox/visualization/Rgraphics/dataSets/landdata-states.csv")
+head(housing[1:5])
+hist(housing$Home.Value)
+
+ggplot(housing, aes(x = Home.Value)) +
+  geom_histogram()
+
+attach(housing)
+plot(Home.Value ~ Date,
+     col = factor(State),
+     data = filter(housing, State %in% c("MA", "TX")))
+legend("topleft",
+       legend = c("MA", "TX"),
+       col = c("black", "red"),
+       pch = 1)
+
+ggplot(filter(housing, State %in% c("MA", "TX")),
+       aes(x=Date,
+           y=Home.Value,
+           color=State))+
+  geom_point()
+
+#aesthetic mapping
+hp2001Q1 <- filter(housing, Date == 2001.25) 
+ggplot(hp2001Q1,
+       aes(y = Structure.Cost, x = Land.Value)) +
+  geom_point()
+
+ggplot(diamonds, aes(x=carat, y=price, color=cut)) + geom_point() + geom_smooth() 
+
+# Adding scatterplot geom (layer1) and smoothing geom (layer2).
