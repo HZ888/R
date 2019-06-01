@@ -51,3 +51,8 @@ ggplot(hp2001Q1,
 ggplot(diamonds, aes(x=carat, y=price, color=cut)) + geom_point() + geom_smooth() 
 
 # Adding scatterplot geom (layer1) and smoothing geom (layer2).
+
+# references:
+# https://datacarpentry.org/R-ecology-lesson/04-visualization-ggplot2.html
+# http://r-statistics.co/ggplot2-Tutorial-With-R.html
+# https://tutorials.iq.harvard.edu/R/Rgraphics/Rgraphics.html
