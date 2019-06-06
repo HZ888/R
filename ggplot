@@ -1,4 +1,4 @@
-# book: Ggplot2 : elegant graphics for data analysis
+# book: Ggplot2 : elegant graphics for data analysis (by Hadley Wickham)
 # ggplot2 examples
 library(titanic)
 dim(titanic_train)
