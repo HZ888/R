@@ -1,5 +1,9 @@
 # book: Ggplot2 : elegant graphics for data analysis
 # ggplot2 examples
+library(titanic)
+dim(titanic_train)
+names(titanic_train)
+
 library(ggplot2) 
 
 mtcars$gear <- factor(mtcars$gear,levels=c(3,4,5),
